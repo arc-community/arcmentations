@@ -9,9 +9,9 @@ from torchvision import transforms
 
 transform = transforms.compose([
 	transforms.RandomOrder([
-			RandomCropInputAndOuput(0.5, same_aug_for_all_pairs=True),
-			RandomDoubleInputBoard(0.5, same_aug_for_all_pairs=True),
-		]),
+        RandomCropInputAndOuput(0.5, same_aug_for_all_pairs=True),
+        RandomDoubleInputBoard(0.5, same_aug_for_all_pairs=True),
+    ]),
 	RandomColor(0.5, same_aug_for_all_pairs=True)
 ])
 
