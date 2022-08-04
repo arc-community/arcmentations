@@ -1,12 +1,13 @@
 import random
-from typing import Union
-from arc.interface import BoardPair
+from typing import Union, Callable
+from arc.interface import BoardPair, Riddle
 
-def same_aug_for_all_pairs_helper(input:Union[BoardPair,list[BoardPair]], transformation_function,same_aug_for_all_pairs:bool,get_params_method=None,params_in=None):
+def same_aug_for_all_pairs_helper(input:Union[BoardPair,list[BoardPair]], transformation_function:Callable, same_aug_for_all_pairs:bool, get_params_method=None, params_in=None):
     if type(input) == list:
         if same_aug_for_all_pairs:
             assert params_in is not None or get_params_method is not None, "params_in or get_params_method must be provided"
             params = get_params_method( seed=random.random()) if get_params_method is not None else params_in
+            params = params if hasattr(params, "__iter__") else [params]
             output = [transformation_function(input_pair,*params) for input_pair in input]
             return output
         else:
@@ -22,3 +23,9 @@ def same_aug_for_all_pairs_helper(input:Union[BoardPair,list[BoardPair]], transf
             return transformation_function(input,*params)
     else:
         raise Exception("Input must be a BoardPair or a list of BoardPairs")
+
+def same_aug_for_riddle_helper(riddle:Riddle, transformation_function:Callable, same_aug_for_all_pairs:bool, get_params_method=None, params_in=None) -> Riddle:
+    aug_riddle = riddle.copy()
+    aug_riddle.train = same_aug_for_all_pairs_helper(aug_riddle.train, transformation_function, same_aug_for_all_pairs, get_params_method, params_in)
+    aug_riddle.test  = same_aug_for_all_pairs_helper(aug_riddle.test,  transformation_function, same_aug_for_all_pairs, get_params_method, params_in) 
+    return aug_riddle

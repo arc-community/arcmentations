@@ -1,5 +1,9 @@
 import numpy as np
 from arc.interface import BoardPair, Board
+from typing import Union
+
+def noop(o):
+    return o
 
 def cropInputAndOutput(inputPair:BoardPair, cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row)->BoardPair:
     input_np_board = inputPair.input.np
@@ -61,3 +65,39 @@ def doubleBoard(boardIn:Board,separation:int,is_horizontal_cat:bool,z_index_of_o
 def doubleInputBoard(board_pair:BoardPair,separation:int,is_horizontal_cat:bool,z_index_of_original:bool=0)->BoardPair:
     board_pair.input = doubleBoard(board_pair.input,separation,is_horizontal_cat,z_index_of_original)
     return board_pair
+
+
+def rotate(board_pair:BoardPair, num_rotations:int=0) -> BoardPair:
+    '''
+    This function takes a Board and returns a new Board that is rotated 90 degrees `num_rotations` times
+    '''
+    assert num_rotations > 0 and num_rotations < 4
+    return BoardPair(
+        input=Board(__root__= np.rot90(board_pair.input.np, num_rotations)),
+        output=Board(__root__= np.rot90(board_pair.output.np, num_rotations))
+    )
+    
+    
+    
+def reflect(board_pair:BoardPair, x_axis:bool=False, y_axis:bool=False) -> BoardPair:
+    '''
+    This function takes a Board and returns a new Board that is reflected over one of the following: x-axis,y-axis, xy-axes, no axes
+    '''
+    x_axis,y_axis = int(x_axis),int(y_axis)
+    
+    if not x_axis and not y_axis:
+        return board_pair.copy()
+    
+    if x_axis and y_axis:
+        flip = None # None flips both axes
+    elif x_axis:
+        flip = 0
+    elif y_axis:
+        flip = 1
+    
+    return BoardPair(
+        input=Board(__root__= np.flip(board_pair.input.np, flip)),
+        output=Board(__root__= np.flip(board_pair.output.np, flip))
+    )
+    return 
+    

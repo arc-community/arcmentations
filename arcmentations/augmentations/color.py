@@ -2,7 +2,7 @@ import functools
 import random
 from arc.interface import BoardPair
 from typing import Union
-from .. import functional
+from arcmentations import functional
 
 from arcmentations.augmentations.helpers import same_aug_for_all_pairs_helper
 
