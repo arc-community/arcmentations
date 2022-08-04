@@ -35,9 +35,9 @@ for riddle in riddles:
 ```
 ## Todo Items
 ### Augmentations to add:
- - Add border to riddles
+ - Add padding to riddles
  - Super resolution (2x or 3x resolution increase)
- - Taurus translate (wraps back around)
+ - Torus translate (wraps back around)
  - Mask augmentation (random pixels masked with a sparsity parameter)
  - Unique mapping between color and pattern
  - Static noise augmentation (add static noise)
@@ -46,6 +46,7 @@ for riddle in riddles:
  - Object detector in input and output and finding objects that are in both, then maybe changing the entire object 
  - Repeat board with augmentation such as reflect
  - Join different boards from same riddle into single board (with and without added augmentations)
+  - Grow input or output board by 2x horizontally and or vertically by spacing out the original board with a background color or random color (maybe this helps with adding a  correspondance prior?)
 
 ### Add notes or metadata if the augmentation is lossy
 ### Generate an inverse transforms for some augmentations so that they can be utilized for Test Time augmentation
