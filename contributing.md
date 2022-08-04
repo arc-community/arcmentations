@@ -1,0 +1,6 @@
+- ### Try to follow the same structure of a Random* augmentation class that eventually calls a function in arcmentations.functional
+- ### The Random* augmentation class doesnt necessarily need to implement a static get_params method if you dont want (although its encouraged), and doesnt necessarily need to use the same_aug_for_all_pairs_helper or specific like that, its pretty flexible.
+- ### Think about weather the augmentation class can accept only a list of board pairs only or both a list of board pairs and a single boardpair. Usually augmentations are able to accept both types of input, but some augmentations may require a list of boardpairs.
+- ### p parameter has to be implemented in the Random* augmentation class (probabilty of applying this aug).
+- ###  same_aug_for_all_pairs flag has to be implemented in the Random* augmentation class if its possible to do so within the logic of the augmentation. If the logic of the augmentation by design doesnt allow for this (for various reasons) then its not a requirement. 
+- ### Think about weather the augmentation is lossy or not, and if it is lossy, add a note in the augs docstring about it.
