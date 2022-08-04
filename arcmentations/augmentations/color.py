@@ -7,7 +7,7 @@ from arcmentations import functional
 from arcmentations.augmentations.helpers import same_aug_for_all_pairs_helper
 
 class RandomColor(object):
-    def __init__(self, p:float,include_0:bool = True, same_aug_for_all_pairs:bool = True):
+    def __init__(self, p:float,include_0:bool = False, same_aug_for_all_pairs:bool = True):
         self.p = p
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.include_0 = include_0
