@@ -35,9 +35,9 @@ for riddle in riddles:
 ```
 ## Todo Items
 ### Augmentations to add:
- - Add border to riddles
+ - Add padding to riddles
  - Super resolution (2x or 3x resolution increase)
- - Taurus translate (wraps back around)
+ - Torus translate (wraps back around)
  - Mask augmentation (random pixels masked with a sparsity parameter)
  - Unique mapping between color and pattern
  - Static noise augmentation (add static noise)
