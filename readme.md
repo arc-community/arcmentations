@@ -15,7 +15,7 @@ transform = transforms.compose([
 	RandomColor(0.5, same_aug_for_all_pairs=True)
 ])
 
-aug_training_boards = transform(training_boards)
+aug_training_riddles = transform(training_riddles)
 
 ```
 See the demonstrations notebook for more details.
@@ -50,6 +50,10 @@ for riddle in riddles:
  - Repeat board with augmentation such as reflect
  - Join different boards from same riddle into single board (with and without added augmentations)
   - Grow input or output board by 2x horizontally and or vertically by spacing out the original board with a background color or random color (maybe this helps with adding a  correspondance prior?)
+  - super res scale everything except background color by a random factor, maybe only across a specifix x/y axis
+  - flag to specify input/output/both on a transformation (impl using helpers not base class)
+  - flag or helper to add more board pairs with AND without the augmentation applied. Useful especially in the case where the augmentation is only applied to input board.
+  - update demo notebook with full riddle augs 
   
 ### support Riddle in and out
 
