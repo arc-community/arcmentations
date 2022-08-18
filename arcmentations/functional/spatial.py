@@ -1,6 +1,11 @@
+from enum import Enum
 import numpy as np
 from arc.interface import BoardPair, Board
-from typing import Union
+
+class Direction(Enum):
+    horizontal = 1
+    vertical = 2
+    both = 3
 
 def noop(o):
     return o
@@ -66,12 +71,13 @@ def doubleInputBoard(board_pair:BoardPair,separation:int,is_horizontal_cat:bool,
     board_pair.input = doubleBoard(board_pair.input,separation,is_horizontal_cat,z_index_of_original)
     return board_pair
 
-
 def rotate(board_pair:BoardPair, num_rotations:int=0) -> BoardPair:
     '''
     This function takes a Board and returns a new Board that is rotated 90 degrees `num_rotations` times
     '''
-    assert num_rotations > 0 and num_rotations < 4
+    assert num_rotations >= 0 and num_rotations < 4
+    if num_rotations == 0:
+        return board_pair
     return BoardPair(
         input=Board(__root__= np.rot90(board_pair.input.np, num_rotations)),
         output=Board(__root__= np.rot90(board_pair.output.np, num_rotations))
@@ -99,5 +105,38 @@ def reflect(board_pair:BoardPair, x_axis:bool=False, y_axis:bool=False) -> Board
         input=Board(__root__= np.flip(board_pair.input.np, flip)),
         output=Board(__root__= np.flip(board_pair.output.np, flip))
     )
-    return 
-    
+def padInputOutput(board:BoardPair,size:int,pad_value:int)->BoardPair:
+    input_np_board = board.input.np
+    output_np_board = board.output.np
+    input_np_board = padBoard(input_np_board,size,pad_value)
+    output_np_board = padBoard(output_np_board,size,pad_value)
+    return BoardPair(input=input_np_board.tolist(),output=output_np_board.tolist())
+
+def padInputOnly(board:BoardPair,size:int,pad_value:int)->BoardPair:
+    input_np_board = board.input.np
+    input_np_board = padBoard(input_np_board,size,pad_value)
+    return BoardPair(input=input_np_board.tolist(),output=board.output)    
+
+def padBoard(boardIn:np.ndarray,size:int,pad_value:int)->np.ndarray:
+    boardIn = np.pad(boardIn,((size,size),(size,size)),constant_values = pad_value)
+    return boardIn
+
+def superResolution(bp:BoardPair,factor:int,stretch_axis:Direction)-> BoardPair:
+    bp.input = superResolutionBoard(bp.input,factor,stretch_axis)
+    # bp.output = superResolutionBoard(bp.output,factor,stretch_axis)
+    return bp
+
+def superResolutionBoard(boardIn:Board,factor:int,stretch_axis:Direction)->Board:
+    """
+    This function takes a Board and returns a new Board that is super-resolved.
+    The super-resolution is done by stretching the board in the specified direction.
+    """
+    np_board = boardIn.np
+    if stretch_axis == Direction.horizontal:
+        np_board = np.repeat(np_board,factor,axis=1)
+    elif stretch_axis == Direction.vertical:
+        np_board = np.repeat(np_board,factor,axis=0)
+    elif stretch_axis == Direction.both:
+        np_board = np.repeat(np_board,factor,axis=0)
+        np_board = np.repeat(np_board,factor,axis=1)
+    return Board(__root__ = np_board.tolist())

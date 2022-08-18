@@ -1,11 +1,13 @@
 import functools
 import random
-from arc.interface import BoardPair
+from arc.interface import BoardPair,Riddle
 from typing import Union
 from arcmentations import functional
 
 from arcmentations.augmentations.helpers import same_aug_for_all_pairs_helper
-
+"""
+Should usually have an include_0 parameter for color augs, since 0 is a special background color
+"""
 class RandomColor(object):
     def __init__(self, p:float,include_0:bool = False, same_aug_for_all_pairs:bool = True):
         self.p = p
@@ -24,10 +26,11 @@ class RandomColor(object):
             colours = [0] + random.sample(list(range(1,10)),9)
         return (colours,)
 
-    def __call__(self, input:Union[BoardPair,list[BoardPair]],params=None)->Union[BoardPair,list[BoardPair]]:
+    def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair]]:
+        func = functional.permute_color
         if random.random() < self.p:
             get_params_method = functools.partial(self.get_params,include_0=self.include_0)
-            return same_aug_for_all_pairs_helper(input, get_params_method=get_params_method, same_aug_for_all_pairs = self.same_aug_for_all_pairs, transformation_function=functional.permute_color)
+            return same_aug_for_all_pairs_helper(input, get_params_method=get_params_method, same_aug_for_all_pairs = self.same_aug_for_all_pairs, transformation_function=func)
         else:
             return input
 
