@@ -39,7 +39,7 @@ for riddle in riddles:
 ### Augmentations to add:
  - Add padding to riddles
  - Super resolution (2x or 3x resolution increase)
- - Torus translate (wraps back around)
+ - Torus translate (wraps back around) (can be combined with pad augmentation to make it more interesting)
  - Mask augmentation (random pixels masked with a sparsity parameter)
  - Unique mapping between color and pattern
  - Static noise augmentation (add static noise)
@@ -52,10 +52,9 @@ for riddle in riddles:
   - Grow input or output board by 2x horizontally and or vertically by spacing out the original board with a background color or random color (maybe this helps with adding a  correspondance prior?)
   - super res scale everything except background color by a random factor, maybe only across a specifix x/y axis
   - flag to specify input/output/both on a transformation (impl using helpers not base class)
-  - flag or helper to add more board pairs with AND without the augmentation applied. Useful especially in the case where the augmentation is only applied to input board.
+  - flag or helper to artificially generate more board pairs with AND without an augmentation applied. Useful especially in the case where the augmentation is only applied to input board.
   - update demo notebook with full riddle augs 
   
-### support Riddle in and out
 
 ### Add notes or metadata if the augmentation is lossy
-### Generate an inverse transforms for some augmentations so that they can be utilized for Test Time augmentation
+### Generate an inverse transforms for some augmentations so that they can be utilized for Test Time Augmentation (TTA)
