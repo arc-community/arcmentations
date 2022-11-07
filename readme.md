@@ -38,6 +38,7 @@ for riddle in riddles:
 ## Todo Items
 ### Augmentations to add:
  - Add padding to riddles
+ - Octagonal grid rotations, much more determinisic and accurate than the current RandomFloatRotate
  - Super resolution (2x or 3x resolution increase)
  - Torus translate (wraps back around) (can be combined with pad augmentation to make it more interesting)
  - Mask augmentation (random pixels masked with a sparsity parameter)
@@ -45,6 +46,7 @@ for riddle in riddles:
  - Static noise augmentation (add static noise)
  - Static noise augmentation that tries to add static with colors not in the puzzle 
  - Reorder puzzle training boards (randomly)
+ - change the test board to one of the training ones and a training board to the test one, ranadomly
  - Some  augmentation that demonstrates the concept of correspondence?
  - Object detector in input and output and finding objects that are in both, then maybe changing the entire object 
  - Repeat board with augmentation such as reflect
