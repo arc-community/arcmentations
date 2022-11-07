@@ -28,7 +28,82 @@ class RandomCropInputAndOuput:
         params = dict(cols_to_crop=self.cols_to_crop, rows_to_crop=self.rows_to_crop)
         func = functional.cropInputAndOutput
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
-    
+
+class RandomTaurusTranslate:
+    def __init__(self, p:float, same_aug_for_all_pairs:bool,max_x_translate:int,max_y_translate:int):
+        self.p = p
+        self.same_aug_for_all_pairs = same_aug_for_all_pairs
+        self.max_x = max_x_translate
+        self.max_y = max_y_translate
+        assert max_x_translate >= 1, "max_x_translate must be >= 1"
+        assert max_y_translate >= 1, "max_y_translate must be >= 1"
+        
+    @staticmethod
+    def get_params(seed, **kwargs):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        x_choice = random.choice(range(0,kwargs['max_x']+1))
+        y_choice = random.choice(range(0,kwargs['max_y']+1))
+        dir_choice_x = random.choice([-1,1])
+        dir_choice_y = random.choice([-1,1])
+        return x_choice,y_choice,dir_choice_x,dir_choice_y
+
+    def __call__(self, input:Union[BoardPair,list[BoardPair], Riddle])->Union[BoardPair,list[BoardPair], Riddle]:
+        params = dict(max_x=self.max_x,max_y=self.max_y)
+        func = functional.taurusTranslate
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs, self.get_params, **params)
+
+
+class RandomCropInputOnly:
+    def __init__(self, p:float, same_aug_for_all_pairs:bool,possible_num_cols_to_crop:list[int]=[1,2],possible_num_rows_to_crop:list[int]=[1,2]):
+        self.p = p
+        self.same_aug_for_all_pairs = same_aug_for_all_pairs
+        self.cols_to_crop = possible_num_cols_to_crop
+        self.rows_to_crop = possible_num_rows_to_crop
+        
+    @staticmethod
+    def get_params(seed, **kwargs):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        col_choice = random.choice(kwargs['cols_to_crop'])
+        row_choice = random.choice(kwargs['rows_to_crop'])
+        dir_choice_col = random.choice([-1,1])
+        dir_choice_row = random.choice([-1,1])
+        return col_choice,row_choice,dir_choice_col,dir_choice_row
+
+    def __call__(self, input:Union[BoardPair,list[BoardPair], Riddle])->Union[BoardPair,list[BoardPair], Riddle]:
+        params = dict(cols_to_crop=self.cols_to_crop, rows_to_crop=self.rows_to_crop)
+        func = functional.cropInputOnly
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
+
+class RandomFloatRotate:
+    def __init__(self, p:float, same_aug_for_all_pairs:bool, max_degree_delta:int=180):
+        """
+        Randomly rotates boards by any number of degrees then re-rasterizes into a grid 
+        """
+        self.p = p
+        self.same_aug_for_all_pairs = same_aug_for_all_pairs
+        self.max_degree_delta = max_degree_delta
+        assert max_degree_delta >= 1, "max_degree_delta must be >= 1"
+        assert max_degree_delta <= 180, "max_degree_delta must be <= 180"
+        
+    @staticmethod
+    def get_params(seed, max_degree_delta):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        r = random.randint(-max_degree_delta,max_degree_delta)
+        return (r,)
+
+    def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
+        params = dict(max_degree_delta=self.max_degree_delta)
+        func = functional.floatRotateAll
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)        
 class RandomDoubleInputBoard:
     def __init__(self, p:float, same_aug_for_all_pairs:bool,possible_separations:list[int]=[-1,1,2], direction_type:Direction=Direction.both, random_z_index:bool=True):
         """
@@ -83,7 +158,7 @@ class RandomRotate:
         """
         random.seed(seed)
         r = number_of_90_degrees_rotations
-        assert r >= 1 and r <=3, f"number_of_90_degrees_rotations must be between -1 and 3, not {r}"
+        assert r >= 1 and r <=3, f"number_of_90_degrees_rotations must be between 1 and 3, not {r}"
         rotation_to_use = random.choice(list(range(r+1)))
         return rotation_to_use
 
@@ -166,8 +241,10 @@ class RandomPadInputOnly:
         params = dict(pad_sizes=self.pad_sizes, pad_values=self.pad_values)
         func = functional.padInputOnly
         return p_and_same_aug_helper(input, func, self.p, self.same_aug_for_all_pairs,self.get_params, **params)
+
+
 class RandomSuperResolution:
-    def __init__(self, p:float, same_aug_for_all_pairs:bool, super_resolution_factors:int=[2,3], stretch_axis:list[Direction] = [Direction.both]):
+    def __init__(self, p:float, same_aug_for_all_pairs:bool, super_resolution_factors:list[int]=[2,3], stretch_axis:list[Direction] = [Direction.both]):
         """
         Randomly explodes boards by a given factor
         """

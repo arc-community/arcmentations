@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
 from arc.interface import BoardPair, Board
+import imutils
 
 class Direction(Enum):
     horizontal = 1
@@ -17,8 +18,13 @@ def cropInputAndOutput(inputPair:BoardPair, cols_to_rem_choice,rows_to_rem_choic
     output_np_board = cropBoard(output_np_board,cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row).np
 
     return BoardPair(input=input_np_board.tolist(),output=output_np_board.tolist())
+def cropInputOnly(inputPair:BoardPair, cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row)->BoardPair:
+    input_np_board = inputPair.input.np
+    input_np_board = cropBoard(input_np_board,cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row).np
 
-def cropBoard(boardIn:Board,cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row)->Board:
+    return BoardPair(input=input_np_board.tolist(),output=inputPair.output)
+
+def cropBoard(boardIn:np.ndarray,cols_to_rem_choice,rows_to_rem_choice,dir_choice_col,dir_choice_row)->Board:
     if cols_to_rem_choice > 0 : 
         if dir_choice_col == -1:
             boardIn = boardIn[cols_to_rem_choice:,:]
@@ -32,6 +38,20 @@ def cropBoard(boardIn:Board,cols_to_rem_choice,rows_to_rem_choice,dir_choice_col
 
     return Board(__root__ = boardIn.tolist())
 
+def floatRotateAll(board_pair:BoardPair,angle:int)->BoardPair:
+    board_pair.input = floatRotate(board_pair.input,angle)
+    board_pair.output = floatRotate(board_pair.output,angle)
+    return board_pair
+
+def floatRotate(board_in:Board,angle:int)->Board:
+    board_in_separated = np.eye(10)[board_in.np]
+    board_in_rotated = imutils.rotate_bound(board_in_separated, angle)
+    threshold = 0.5
+    # ret = np.amax(((board_in_rotated>threshold)*np.arange(0,10)),-1)
+    ret = np.argmax(board_in_rotated,-1)
+    return Board(__root__ = ret.tolist())
+    
+    
 def doubleBoard(boardIn:Board,separation:int,is_horizontal_cat:bool,z_index_of_original:bool=0)->Board:
     """
     This function takes a Board and returns a new Board with the input board doubled.
@@ -79,8 +99,8 @@ def rotate(board_pair:BoardPair, num_rotations:int=0) -> BoardPair:
     if num_rotations == 0:
         return board_pair
     return BoardPair(
-        input=Board(__root__= np.rot90(board_pair.input.np, num_rotations)),
-        output=Board(__root__= np.rot90(board_pair.output.np, num_rotations))
+        input=Board(__root__= np.rot90(board_pair.input.np, num_rotations).tolist()),
+        output=Board(__root__= np.rot90(board_pair.output.np, num_rotations).tolist())
     )
     
     
@@ -89,7 +109,6 @@ def reflect(board_pair:BoardPair, x_axis:bool=False, y_axis:bool=False) -> Board
     '''
     This function takes a Board and returns a new Board that is reflected over one of the following: x-axis,y-axis, xy-axes, no axes
     '''
-    x_axis,y_axis = int(x_axis),int(y_axis)
     
     if not x_axis and not y_axis:
         return board_pair.copy()
@@ -102,8 +121,8 @@ def reflect(board_pair:BoardPair, x_axis:bool=False, y_axis:bool=False) -> Board
         flip = 1
     
     return BoardPair(
-        input=Board(__root__= np.flip(board_pair.input.np, flip)),
-        output=Board(__root__= np.flip(board_pair.output.np, flip))
+        input=Board(__root__= np.flip(board_pair.input.np, flip).tolist()), 
+        output=Board(__root__= np.flip(board_pair.output.np, flip).tolist())
     )
 def padInputOutput(board:BoardPair,size:int,pad_value:int)->BoardPair:
     input_np_board = board.input.np
@@ -123,7 +142,7 @@ def padBoard(boardIn:np.ndarray,size:int,pad_value:int)->np.ndarray:
 
 def superResolution(bp:BoardPair,factor:int,stretch_axis:Direction)-> BoardPair:
     bp.input = superResolutionBoard(bp.input,factor,stretch_axis)
-    # bp.output = superResolutionBoard(bp.output,factor,stretch_axis)
+    bp.output = superResolutionBoard(bp.output,factor,stretch_axis)
     return bp
 
 def superResolutionBoard(boardIn:Board,factor:int,stretch_axis:Direction)->Board:
@@ -139,4 +158,22 @@ def superResolutionBoard(boardIn:Board,factor:int,stretch_axis:Direction)->Board
     elif stretch_axis == Direction.both:
         np_board = np.repeat(np_board,factor,axis=0)
         np_board = np.repeat(np_board,factor,axis=1)
+    return Board(__root__ = np_board.tolist())
+
+def taurusTranslate(boardPair:BoardPair, x_to_rem_choice, y_to_rem_choice, dir_choice_x, dir_choice_y)->BoardPair:
+    input_board = taurusTranslateBoard(boardPair.input,x_to_rem_choice,y_to_rem_choice,dir_choice_x,dir_choice_y)
+    output_board = taurusTranslateBoard(boardPair.output,x_to_rem_choice,y_to_rem_choice,dir_choice_x,dir_choice_y)
+    return BoardPair(input=input_board,output=output_board)
+
+
+def taurusTranslateBoard(boardIn:Board,x_translate,x_dir,y_translate,y_dir)->Board:
+    """
+    This function takes a Board and returns a new Board that is translated by the specified amount.
+    The translation is done by shifting the board in the specified direction.
+    """
+    np_board = boardIn.np
+    x_translate = x_translate * x_dir
+    y_translate = y_translate * y_dir
+    np_board = np.roll(np_board,x_translate,axis=1)
+    np_board = np.roll(np_board,y_translate,axis=0)
     return Board(__root__ = np_board.tolist())
