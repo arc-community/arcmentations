@@ -1,4 +1,4 @@
-
+## This project has been merged into https://github.com/arc-community/arc and can be used by installing the arc package
 
 requires https://github.com/arc-community/arc installed
 
