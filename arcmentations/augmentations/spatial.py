@@ -273,10 +273,8 @@ class Shuffle:
     def __init__(
         self,
         p: float,
-        same_aug_for_all_pairs: bool = True,
     ):
         self.p = p
-        self.same_aug_for_all_pairs = same_aug_for_all_pairs
 
     @staticmethod
     def get_params(seed, **kwargs):
