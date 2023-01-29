@@ -267,3 +267,31 @@ class RandomSuperResolution:
         params = dict(super_resolution_factors=self.super_resolution_factors, stretch_axis=self.stretch_axis)
         func = functional.superResolution
         return p_and_same_aug_helper(input, func, self.p, self.same_aug_for_all_pairs, self.get_params, **params)
+    
+
+class Shuffle:
+    def __init__(
+        self,
+        p: float,
+        same_aug_for_all_pairs: bool = True,
+    ):
+        self.p = p
+        self.same_aug_for_all_pairs = same_aug_for_all_pairs
+
+    @staticmethod
+    def get_params(seed, **kwargs):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        num_training = kwargs["num_training"]
+        num_test = kwargs["num_test"]
+        return random.shuffle(list(range(num_training))), random.shuffle(list(range(num_test)))
+    
+    def __call__(self, input:Riddle)->Riddle:
+        assert isinstance(input, Riddle), "Shuffle only works on Riddles"# todo add pairs
+        params = dict(num_training=len(input.train), num_test=len(input.test))
+        shuffled_train_list, shuffled_test_list = self.get_params(**params)
+        input.train = [input.train[i] for i in shuffled_train_list]
+        input.test = [input.test[i] for i in shuffled_test_list]
+        return input

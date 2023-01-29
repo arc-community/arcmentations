@@ -56,6 +56,8 @@ for riddle in riddles:
   - flag to specify input/output/both on a transformation (impl using helpers not base class)
   - flag or helper to artificially generate more board pairs with AND without an augmentation applied. Useful especially in the case where the augmentation is only applied to input board.
   - update demo notebook with full riddle augs 
+  - row_col_shuffler aug take a boardpair from train and copy it then shuffle some cols around.
+  - same pair as one in the train (better copy task!) 
   
 
 ### Add notes or metadata if the augmentation is lossy

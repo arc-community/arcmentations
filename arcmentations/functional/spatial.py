@@ -177,3 +177,4 @@ def taurusTranslateBoard(boardIn:Board,x_translate,x_dir,y_translate,y_dir)->Boa
     np_board = np.roll(np_board,x_translate,axis=1)
     np_board = np.roll(np_board,y_translate,axis=0)
     return Board(__root__ = np_board.tolist())
+
