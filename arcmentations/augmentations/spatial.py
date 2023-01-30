@@ -1,3 +1,4 @@
+
 import random
 from arc.interface import BoardPair, Riddle
 from typing import Union
@@ -288,6 +289,9 @@ class Shuffle:
     
     def __call__(self, input:Riddle)->Riddle:
         assert isinstance(input, Riddle), "Shuffle only works on Riddles"# todo add pairs
+        #TODO add probability.
+        if random.random() > self.p:
+            return input
         params = dict(num_training=len(input.train), num_test=len(input.test))
         shuffled_train_list, shuffled_test_list = self.get_params(**params)
         input.train = [input.train[i] for i in shuffled_train_list]
