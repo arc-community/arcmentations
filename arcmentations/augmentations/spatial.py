@@ -293,7 +293,7 @@ class Shuffle:
         if random.random() > self.p:
             return input
         params = dict(num_training=len(input.train), num_test=len(input.test))
-        shuffled_train_list, shuffled_test_list = self.get_params(**params)
+        shuffled_train_list, shuffled_test_list = self.get_params(random.random(),**params)
         input.train = [input.train[i] for i in shuffled_train_list]
         input.test = [input.test[i] for i in shuffled_test_list]
         return input

@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import numpy as np
 
 from .helpers import same_aug_for_all_pairs_helper
-from .noise import noiseInput
+from ..functional.noise import noiseInput
 from arc.interface import BoardPair, Riddle
 
 
