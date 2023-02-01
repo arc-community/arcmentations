@@ -24,20 +24,7 @@ class Noise(object):
         self.noise_ceiling = noise_ceiling
         self.kernel_width_max = kernel_width_max
         self.kernel_height_max = kernel_height_max
-
-    @staticmethod
-    def get_params(seed, **kwargs):
-        """
-        Get parameters for this augmenter. Must use the seed provided
-        """
-        # random.seed(seed)
-        # noise_dist = random.choice(kwargs['noise_dist'])
-        noise_level = kwargs["noise_level"]
-        assert (
-            noise_level >= 0.0 and noise_level <= 1.0
-        ), "noise_level must be a percentage (between 0 and 1)"
-        noise_size = kwargs["noise_size"]
-        return noise_level, noise_size
+        self.same_aug_for_all_pairs = True
 
     def __call__(
         self, inp: Union[BoardPair, list[BoardPair], Riddle]
@@ -54,24 +41,20 @@ class Noise(object):
                 unused_colors -= set(np.unique(bp.output.np).tolist())
 
             # Pick a random color (TODO allow for multiple color noise) todo add same aug for all pairs functionality
+            if len(unused_colors) == 0:
+                return inp
             color = random.choice(list(unused_colors))
 
             noise_level = random.uniform(self.noise_floor, self.noise_ceiling)
             kernel_size = random.randint(1, self.kernel_width_max)
             kernel_size2 = random.randint(1, self.kernel_height_max)
             noise_size = (kernel_size, kernel_size2)
-            param_list = []
-            param_list.append(color)
-            get_params_method = functools.partial(
-                self.get_params,
-                noise_level=noise_level,
-                noise_size=noise_size,
-            )
+            param_list = [noise_level, noise_size, color]
             return same_aug_for_all_pairs_helper(
                 inp,
-                get_params_method=get_params_method,
                 transformation_function=func,
                 params_in=param_list,
+                same_aug_for_all_pairs=self.same_aug_for_all_pairs,
             )
         else:
             return inp

@@ -18,7 +18,7 @@ def noiseInput(inputPair: BoardPair, noise_level, noise_size, color) -> BoardPai
     for x, y in zip(nx, ny):
         for i in range(x, x + noise_size[0]):
             for j in range(y, y + noise_size[1]):
-                if (0 <= i < width) and (0 <= j < height):
+                if (0 <= j < width) and (0 <= i < height):
                     noise[i, j] = color
                     mask[i, j] = 0
     res = mask * input_np_board + noise
