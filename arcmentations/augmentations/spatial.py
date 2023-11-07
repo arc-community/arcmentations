@@ -12,7 +12,7 @@ class RandomCropInputAndOuput:
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.cols_to_crop = possible_num_cols_to_crop
         self.rows_to_crop = possible_num_rows_to_crop
-        
+
     @staticmethod
     def get_params(seed, **kwargs):
         """
@@ -38,7 +38,7 @@ class RandomTaurusTranslate:
         self.max_y = max_y_translate
         assert max_x_translate >= 1, "max_x_translate must be >= 1"
         assert max_y_translate >= 1, "max_y_translate must be >= 1"
-        
+
     @staticmethod
     def get_params(seed, **kwargs):
         """
@@ -63,7 +63,7 @@ class RandomCropInputOnly:
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.cols_to_crop = possible_num_cols_to_crop
         self.rows_to_crop = possible_num_rows_to_crop
-        
+
     @staticmethod
     def get_params(seed, **kwargs):
         """
@@ -84,14 +84,14 @@ class RandomCropInputOnly:
 class RandomFloatRotate:
     def __init__(self, p:float, same_aug_for_all_pairs:bool, max_degree_delta:int=180):
         """
-        Randomly rotates boards by any number of degrees then re-rasterizes into a grid 
+        Randomly rotates boards by any number of degrees then re-rasterizes into a grid
         """
         self.p = p
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.max_degree_delta = max_degree_delta
         assert max_degree_delta >= 1, "max_degree_delta must be >= 1"
         assert max_degree_delta <= 180, "max_degree_delta must be <= 180"
-        
+
     @staticmethod
     def get_params(seed, max_degree_delta):
         """
@@ -99,12 +99,14 @@ class RandomFloatRotate:
         """
         random.seed(seed)
         r = random.randint(-max_degree_delta,max_degree_delta)
+        r = 90
+        print(r)
         return (r,)
 
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
         params = dict(max_degree_delta=self.max_degree_delta)
         func = functional.floatRotateAll
-        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)        
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 class RandomDoubleInputBoard:
     def __init__(self, p:float, same_aug_for_all_pairs:bool,possible_separations:list[int]=[-1,1,2], direction_type:Direction=Direction.both, random_z_index:bool=True):
         """
@@ -141,8 +143,8 @@ class RandomDoubleInputBoard:
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
         params = dict(possible_separations=self.possible_separations,direction_type=self.direction_type,random_z_index=self.random_z_index)
         func = functional.doubleInputBoard
-        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)    
-    
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
+
 class RandomRotate:
     def __init__(self, p:float, same_aug_for_all_pairs:bool, number_of_90_degrees_rotations:int=3):
         """
@@ -151,7 +153,7 @@ class RandomRotate:
         self.p = p
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.number_of_90_degrees_rotations = number_of_90_degrees_rotations
-        
+
     @staticmethod
     def get_params(seed, number_of_90_degrees_rotations):
         """
@@ -166,8 +168,8 @@ class RandomRotate:
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
         params = dict(number_of_90_degrees_rotations=self.number_of_90_degrees_rotations)
         func = functional.rotate
-        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)        
-        
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
+
 class RandomReflect:
     def __init__(self, p:float, same_aug_for_all_pairs:bool, x_axis:bool=True, y_axis:bool=True):
         """
@@ -177,7 +179,7 @@ class RandomReflect:
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.x_axis = x_axis
         self.y_axis = y_axis
-        
+
     @staticmethod
     def get_params(seed, x_axis:bool, y_axis:bool):
         """
@@ -203,7 +205,7 @@ class RandomPad:
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.pad_sizes = pad_sizes
         self.pad_values = pad_values
-        
+
     @staticmethod
     def get_params(seed, pad_sizes, pad_values):
         """
@@ -227,7 +229,7 @@ class RandomPadInputOnly:
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
         self.pad_sizes = pad_sizes
         self.pad_values = pad_values
-        
+
     @staticmethod
     def get_params(seed, pad_sizes, pad_values):
         """
@@ -260,7 +262,7 @@ class RandomSuperResolution:
         """
         Get parameters for this augmenter. Must use the seed provided
         """
-        random.seed(seed)   
+        random.seed(seed)
         s = random.choice(super_resolution_factors)
         axes = random.choice(stretch_axis)
         return s, axes
@@ -268,7 +270,7 @@ class RandomSuperResolution:
         params = dict(super_resolution_factors=self.super_resolution_factors, stretch_axis=self.stretch_axis)
         func = functional.superResolution
         return p_and_same_aug_helper(input, func, self.p, self.same_aug_for_all_pairs, self.get_params, **params)
-    
+
 
 class Shuffle:
     def __init__(
@@ -288,7 +290,7 @@ class Shuffle:
         test_idxs = list(range(num_test))
         random.shuffle(train_idxs)
         random.shuffle(test_idxs)
-        return train_idxs, test_idxs        
+        return train_idxs, test_idxs
 
     def __call__(self, input:Riddle)->Riddle:
         assert isinstance(input, Riddle), "Shuffle only works on Riddles"# todo add pairs
