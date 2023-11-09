@@ -19,7 +19,7 @@ def plot_one(ax, train_or_test,input_or_output,input_matrix):
     ax.set_yticklabels([])
     ax.set_title(train_or_test + ' '+input_or_output)
 
-def plot_task(task:Riddle,save=False,path_to_save='./tmp/task.png'):
+def plot_task(task:Riddle,save=False,path_to_save='./tmp/task.png',save_train=False):
     """
     Plots the first train and test pairs of a specified task,
     using same color scheme as the ARC app
@@ -30,7 +30,16 @@ def plot_task(task:Riddle,save=False,path_to_save='./tmp/task.png'):
         plot_one(axs[0,i],'train','input',task.train[i].input.np)
         plot_one(axs[1,i],'train','output',task.train[i].output.np)
     plt.tight_layout()
-    plt.show(block = False)
+    if save_train:
+        fig.canvas.draw()
+        buf = fig.canvas.buffer_rgba()
+        plt.close('all')
+        # save image to ./tmp
+        import numpy as np
+        import PIL
+        X = np.asarray(buf)
+        im = PIL.Image.fromarray(X)
+        im.save(f'{path_to_save}.train.png')
 
     num_test = len(task.test)
     fig, axs = plt.subplots(2, num_test, figsize=(3*num_test,3*2))

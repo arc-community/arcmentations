@@ -82,31 +82,33 @@ class RandomCropInputOnly:
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 
 class RandomFloatRotate:
-    def __init__(self, p:float, same_aug_for_all_pairs:bool, max_degree_delta:int=180):
+    def __init__(self, p:float, same_aug_for_all_pairs:bool, max_abs_degree_delta:int=180, possible_superres_scale_facs= [1]):
         """
         Randomly rotates boards by any number of degrees then re-rasterizes into a grid
         """
         self.p = p
         self.same_aug_for_all_pairs = same_aug_for_all_pairs
-        self.max_degree_delta = max_degree_delta
-        assert max_degree_delta >= 1, "max_degree_delta must be >= 1"
-        assert max_degree_delta <= 180, "max_degree_delta must be <= 180"
+        self.max_degree_delta = max_abs_degree_delta
+        assert max_abs_degree_delta >= 1, "max_degree_delta must be >= 1"
+        assert max_abs_degree_delta <= 180, "max_degree_delta must be <= 180"
+        self.superres_scale_fac = possible_superres_scale_facs
+        assert all([s >= 1 for s in possible_superres_scale_facs]), "a superres_scale_fac must be >= 1"
 
     @staticmethod
-    def get_params(seed, max_degree_delta):
+    def get_params(seed, max_degree_delta, superres_scale_fac):
         """
         Get parameters for this augmenter. Must use the seed provided
         """
         random.seed(seed)
         r = random.randint(-max_degree_delta,max_degree_delta)
-        r = 90
-        print(r)
-        return (r,)
+        superres_scale_fac = random.choice(superres_scale_fac)
+        return (r,superres_scale_fac)
 
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
-        params = dict(max_degree_delta=self.max_degree_delta)
+        params = dict(max_degree_delta=self.max_degree_delta, superres_scale_fac=self.superres_scale_fac)
         func = functional.floatRotateAll
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
+
 class RandomDoubleInputBoard:
     def __init__(self, p:float, same_aug_for_all_pairs:bool,possible_separations:list[int]=[-1,1,2], direction_type:Direction=Direction.both, random_z_index:bool=True):
         """

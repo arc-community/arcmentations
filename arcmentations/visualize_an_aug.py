@@ -12,7 +12,7 @@ from arcmentations.augmentations import RandomCropInputAndOuput
 #   from torchvision import transforms
 if __name__ == "__main__":
     train_riddles = get_riddles(["training"])
-    riddle = train_riddles[1]
+    riddle = train_riddles[6]
     # transform = transforms.Compose([
     #     # transforms.RandomOrder([
     #     #     RandomCropInputAndOuput(1, same_aug_for_all_pairs=True),
@@ -39,10 +39,11 @@ if __name__ == "__main__":
     #     ]),
 
     # ])
-    transform = RandomFloatRotate(1, same_aug_for_all_pairs=True, max_degree_delta = 180)
+    transform = RandomFloatRotate(1, same_aug_for_all_pairs=True, \
+            max_abs_degree_delta = 180,possible_superres_scale_facs=[1])
     riddle_transformed = transform(copy.deepcopy(riddle))
-
-    plot_task(riddle_transformed, save=True)
-    plot_task(riddle, save=True,path_to_save='./tmp/train.png')
+    path_to_save = './tmp/time_{}.png'.format(time.time())
+    plot_task(riddle_transformed, save=True,save_train=True,path_to_save=path_to_save)
+    plot_task(riddle, save=True,path_to_save='./tmp/train.png',save_train=True)
     #time.sleep(100000)
 
