@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # ])
     transform = RandomFloatRotate(1, same_aug_for_all_pairs=True, \
-            max_abs_degree_delta = 180,possible_superres_scale_facs=[1])
+            max_abs_degree_delta = 180,possible_superres_scale_facs=[2])
     riddle_transformed = transform(copy.deepcopy(riddle))
     path_to_save = './tmp/time_{}.png'.format(time.time())
     plot_task(riddle_transformed, save=True,save_train=True,path_to_save=path_to_save)
