@@ -187,7 +187,6 @@ def customFloatRotate(board_in:Board,angle:int)->Board:
     return Board(__root__=new_board_array.tolist())
 
 
-
 def doubleBoard(boardIn:Board,separation:int,is_horizontal_cat:bool,z_index_of_original:bool=0)->Board:
     """
     This function takes a Board and returns a new Board with the input board doubled.
@@ -312,7 +311,7 @@ def taurusTranslate(boardPair:BoardPair, x_to_rem_choice, y_to_rem_choice, dir_c
     return BoardPair(input=input_board,output=output_board)
 
 
-def taurusTranslateBoard(boardIn:Board,x_translate,x_dir,y_translate,y_dir)->Board:
+def taurusTranslateBoard(boardIn:Board, x_translate, x_dir, y_translate, y_dir)->Board:
     """
     This function takes a Board and returns a new Board that is translated by the specified amount.
     The translation is done by shifting the board in the specified direction.
@@ -320,6 +319,22 @@ def taurusTranslateBoard(boardIn:Board,x_translate,x_dir,y_translate,y_dir)->Boa
     np_board = boardIn.np
     x_translate = x_translate * x_dir
     y_translate = y_translate * y_dir
-    np_board = np.roll(np_board,x_translate,axis=1)
-    np_board = np.roll(np_board,y_translate,axis=0)
+    np_board = np.roll(np_board, x_translate, axis=1)
+    np_board = np.roll(np_board, y_translate,axis=0)
     return Board(__root__ = np_board.tolist())
+
+def quasiRotateBoard(boardIn:Board, angle)-> Board:
+    x_component = np.cos(np.deg2rad(angle))*np.arange(len(boardIn.np[0]))
+    y_component = np.sin(np.deg2rad(angle))*np.arange(len(boardIn.np))
+    point_list = []
+    translated_point_list = []
+    for x in len(boardIn.np[0]):
+        for y in len(boardIn.np):
+            point_list.append(boardIn.np[x][y])
+    for point in point_list:
+
+
+
+
+
+
