@@ -81,6 +81,31 @@ class RandomCropInputOnly:
         func = functional.cropInputOnly
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 
+class RandomFloatRotate2:
+    def __init__(self, p:float, max_abs_degree_delta:int=180):
+        """
+        Randomly rotates boards by any number of degrees then re-rasterizes into a grid
+        """
+        self.p = p
+        self.max_degree_delta = max_abs_degree_delta
+        assert max_abs_degree_delta >= 1, "max_degree_delta must be >= 1"
+        assert max_abs_degree_delta <= 180, "max_degree_delta must be <= 180"
+
+    @staticmethod
+    def get_params(seed, max_degree_delta):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        r = random.randint(-max_degree_delta,max_degree_delta)
+        r = 45
+        return (r,)
+
+    def __call__(self, input:Riddle)->Riddle:
+        params = dict(max_degree_delta=self.max_degree_delta)
+        r = functional.floatRotateAll2(input,*self.get_params(random.random(),**params))
+        return r
+
 class RandomFloatRotate:
     def __init__(self, p:float, same_aug_for_all_pairs:bool, max_abs_degree_delta:int=180, possible_superres_scale_facs= [1]):
         """

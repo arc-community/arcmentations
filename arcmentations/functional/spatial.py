@@ -1,6 +1,6 @@
 from enum import Enum
 import numpy as np
-from arc.interface import BoardPair, Board
+from arc.interface import BoardPair, Board,Riddle
 import imutils
 import scipy
 import skimage
@@ -45,6 +45,20 @@ def floatRotateAll(board_pair:BoardPair,angle:int,superres_scale_fac)->BoardPair
     board_pair.output = floatRotate(board_pair.output,angle,superres_scale_fac)
     return board_pair
 
+def floatRotateAll2(r:Riddle,angle:int)->Riddle:
+    # case 1 all inputs and outputs are the same size
+    # case 2 all outputs are the same size, all inputs are the same size
+    # case 3 inputs have the same size as outputs
+    # case 4 no known size relationship
+        # if the sizes are meant to be equal in all including test then make them equal.
+    for board_pair in r.train:
+        board_pair.input = customFloatRotate(board_pair.input,angle)
+        board_pair.output = customFloatRotate(board_pair.output,angle)
+    for board_pair in r.test:
+        board_pair.input = customFloatRotate(board_pair.input,angle)
+        board_pair.output = customFloatRotate(board_pair.output,angle)
+    return r
+
 def floatRotate(board_in:Board,angle:int,superres_scale_fac)->Board:
     #board_in = Board(__root__= np.flip(board_in.np, 1).tolist())
     board_in_np_border = np.pad(board_in.np,((1,1),(1,1)),constant_values = 0)
@@ -67,6 +81,110 @@ def floatRotate(board_in:Board,angle:int,superres_scale_fac)->Board:
     ret = np.argmax(downscaled_board,-1)
     #ret = scipy.ndimage.rotate(board_in.np, angle, order=0, prefilter=False)
     return Board(__root__ = ret.tolist())
+
+def customFloatRotate(board_in:Board,angle:int)->Board:
+    #assert board_in.np.shape[0] % 2 == 1 and board_in.np.shape[1] % 2 == 1
+    center_y, center_x = np.array(board_in.np.shape) / 2
+
+    # Create a rotation matrix using the given angle
+    angle_rad = np.deg2rad(angle)
+    cos_val, sin_val = np.cos(angle_rad), np.sin(angle_rad)
+    rotation_matrix = np.array([[cos_val, -sin_val], [sin_val, cos_val]])
+
+    rotated_points = []
+
+    min_x, min_y = 100000, 100000
+    max_x, max_y = -100000, -100000
+    # find all 4 corners points
+    corners = [(0,0),(0,len(board_in.np[0])-1),(len(board_in.np)-1,0),(len(board_in.np)-1,len(board_in.np[0])-1)]
+    for y,x in corners:
+        trans_point = np.array([y - center_y, x - center_x])
+        rotated_point = rotation_matrix @ trans_point
+        rotated_point[0] += center_y
+        rotated_point[1] += center_x
+        min_x, max_x = min(min_x, rotated_point[1]), max(max_x, rotated_point[1])
+        min_y, max_y = min(min_y, rotated_point[0]), max(max_y, rotated_point[0])
+
+    for y in range(len(board_in.np)):
+        for x in range(len(board_in.np[0])):
+            if board_in.np[y][x] != 0:
+                 # Translate points to origin for rotation
+                trans_point = np.array([y - center_y, x - center_x])
+                # Apply rotation
+                rotated_point = rotation_matrix @ trans_point
+                # Translate back from origin
+                rotated_point[0] += center_y
+                rotated_point[1] += center_x
+
+                rotated_points.append((rotated_point, board_in.np[y][x]))
+
+                # min_x, max_x = min(min_x, rotated_point[1]), max(max_x, rotated_point[1])
+                # min_y, max_y = min(min_y, rotated_point[0]), max(max_y, rotated_point[0])
+
+    # Determine new board size based on the bounding box
+    # new_height = int(np.ceil(max_y ) - np.sign(min_y)*np.ceil(abs(min_y)))
+    # new_width = int(np.ceil(max_x  ) - np.sign(min_x)*np.ceil(abs(min_x)))
+    new_height = int(np.ceil(max_y ) - np.floor(min_y))
+    new_width = int(np.ceil(max_x  ) - np.floor(min_x))
+    # Create a new board with the determined size
+    new_board_array = np.zeros((new_height, new_width), dtype=board_in.np.dtype)
+
+    # Offset to translate rotated points to the new board's coordinate space
+    offset_y, offset_x = -min_y, -min_x
+
+    deduped_points = []
+    def key(x):
+        last_decimal_x = abs(x[0][0] - int(x[0][0]))
+        last_decimal_y = abs(x[0][1] - int(x[0][1]))
+        if last_decimal_x > 0.5:
+            last_decimal_x = 1 - last_decimal_x
+        if last_decimal_y > 0.5:
+            last_decimal_y = 1 - last_decimal_y
+        return last_decimal_x + last_decimal_y
+
+    rotated_points = sorted(rotated_points,key=key)
+    dedup_set = set()
+    for point,color in rotated_points:
+        if (int(point[0] + offset_y), int(point[1] + offset_x)) not in dedup_set:
+            dedup_set.add((int(point[0] + offset_y), int(point[1] + offset_x)))
+            deduped_points.append((int(point[0] + offset_y), int(point[1] + offset_x),color))
+        else:
+            if (int(point[0] + offset_y+1), int(point[1] + offset_x)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y+1), int(point[1] + offset_x)))
+                deduped_points.append((int(point[0] + offset_y+1), int(point[1] + offset_x),color))
+            elif (int(point[0] + offset_y-1), int(point[1] + offset_x)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y-1), int(point[1] + offset_x)))
+                deduped_points.append((int(point[0] + offset_y-1), int(point[1] + offset_x),color))
+            elif (int(point[0] + offset_y), int(point[1] + offset_x+1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y), int(point[1] + offset_x+1)))
+                deduped_points.append((int(point[0] + offset_y), int(point[1] + offset_x+1),color))
+            elif (int(point[0] + offset_y), int(point[1] + offset_x-1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y), int(point[1] + offset_x-1)))
+                deduped_points.append((int(point[0] + offset_y), int(point[1] + offset_x-1),color))
+            elif (int(point[0] + offset_y+1), int(point[1] + offset_x+1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y+1), int(point[1] + offset_x+1)))
+                deduped_points.append((int(point[0] + offset_y+1), int(point[1] + offset_x+1),color))
+            elif (int(point[0] + offset_y-1), int(point[1] + offset_x-1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y-1), int(point[1] + offset_x-1)))
+                deduped_points.append((int(point[0] + offset_y-1), int(point[1] + offset_x-1),color))
+            elif (int(point[0] + offset_y+1), int(point[1] + offset_x-1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y+1), int(point[1] + offset_x-1)))
+                deduped_points.append((int(point[0] + offset_y+1), int(point[1] + offset_x-1),color))
+            elif (int(point[0] + offset_y-1), int(point[1] + offset_x+1)) not in dedup_set:
+                dedup_set.add((int(point[0] + offset_y-1), int(point[1] + offset_x+1)))
+                deduped_points.append((int(point[0] + offset_y-1), int(point[1] + offset_x+1),color))
+            else:
+                print("WARN: point not added to deduped_points, we tried our best")
+                print(point)
+    rotated_points = deduped_points
+
+
+    # Place the points in the new board
+    for pointy,pointx, color in rotated_points:
+        new_board_array[pointy, pointx] = color
+
+    # Return the new Board
+    return Board(__root__=new_board_array.tolist())
 
 
 
@@ -145,18 +263,28 @@ def reflect(board_pair:BoardPair, x_axis:bool=False, y_axis:bool=False) -> Board
 def padInputOutput(board:BoardPair,size:int,pad_value:int)->BoardPair:
     input_np_board = board.input.np
     output_np_board = board.output.np
-    input_np_board = padBoard(input_np_board,size,pad_value)
-    output_np_board = padBoard(output_np_board,size,pad_value)
+    input_np_board = padBoardHelper(input_np_board,size,pad_value)
+    output_np_board = padBoardHelper(output_np_board,size,pad_value)
     return BoardPair(input=input_np_board.tolist(),output=output_np_board.tolist())
+
 
 def padInputOnly(board:BoardPair,size:int,pad_value:int)->BoardPair:
     input_np_board = board.input.np
-    input_np_board = padBoard(input_np_board,size,pad_value)
+    input_np_board = padBoardHelper(input_np_board,size,pad_value)
     return BoardPair(input=input_np_board.tolist(),output=board.output)
 
-def padBoard(boardIn:np.ndarray,size:int,pad_value:int)->np.ndarray:
+def padBoardHelper(boardIn:np.ndarray,size:int,pad_value:int)->np.ndarray:
     boardIn = np.pad(boardIn,((size,size),(size,size)),constant_values = pad_value)
     return boardIn
+def padBoardHorizontal(boardIn:Board,size:int,pad_value:int)->Board:
+    boardIn = boardIn.np
+    boardIn = np.pad(boardIn,((0,0),(size,0)),constant_values = pad_value)
+    return Board(__root__ = boardIn.tolist())
+
+def padBoardVertical(boardIn:Board,size:int,pad_value:int)->Board:
+    boardIn = boardIn.np
+    boardIn = np.pad(boardIn,pad_width=((size,0),(0,0)),constant_values = pad_value)
+    return Board(__root__ = boardIn.tolist())
 
 def superResolution(bp:BoardPair,factor:int,stretch_axis:Direction)-> BoardPair:
     bp.input = superResolutionBoard(bp.input,factor,stretch_axis)
@@ -195,4 +323,3 @@ def taurusTranslateBoard(boardIn:Board,x_translate,x_dir,y_translate,y_dir)->Boa
     np_board = np.roll(np_board,x_translate,axis=1)
     np_board = np.roll(np_board,y_translate,axis=0)
     return Board(__root__ = np_board.tolist())
-

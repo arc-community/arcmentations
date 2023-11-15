@@ -40,6 +40,8 @@ def plot_task(task:Riddle,save=False,path_to_save='./tmp/task.png',save_train=Fa
         X = np.asarray(buf)
         im = PIL.Image.fromarray(X)
         im.save(f'{path_to_save}.train.png')
+    else:
+        plt.show(block=True)
 
     num_test = len(task.test)
     fig, axs = plt.subplots(2, num_test, figsize=(3*num_test,3*2))
@@ -62,7 +64,7 @@ def plot_task(task:Riddle,save=False,path_to_save='./tmp/task.png',save_train=Fa
         im = PIL.Image.fromarray(X)
         im.save(path_to_save)
     else:
-        plt.show(block=False)
+        plt.show(block=True)
 
 def plot_pairs(task:List[BoardPair]):
     """
