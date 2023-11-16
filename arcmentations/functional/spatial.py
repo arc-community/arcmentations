@@ -95,6 +95,8 @@ def floatRotateAll2(r: Riddle, angle: int) -> Riddle:
     # case 3 inputs have the same size as outputs
     # case 4 no known size relationship
     # if the sizes are meant to be equal in all including test then make them equal.
+    # all cases are now handled by producing a deterministic transformation output shape based on input shape
+    # so all relationships will be preserved even if the shapes themselves are different.
     for board_pair in r.train:
         board_pair.input = customFloatRotate(board_pair.input, angle)
         board_pair.output = customFloatRotate(board_pair.output, angle)
