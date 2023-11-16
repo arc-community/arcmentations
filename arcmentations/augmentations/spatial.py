@@ -81,31 +81,6 @@ class RandomCropInputOnly:
         func = functional.cropInputOnly
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 
-class RandomFloatRotate2:
-    def __init__(self, p:float, max_abs_degree_delta:int=180):
-        """
-        Randomly rotates boards by any number of degrees then re-rasterizes into a grid
-        """
-        self.p = p
-        self.max_degree_delta = max_abs_degree_delta
-        assert max_abs_degree_delta >= 1, "max_degree_delta must be >= 1"
-        assert max_abs_degree_delta <= 180, "max_degree_delta must be <= 180"
-
-    @staticmethod
-    def get_params(seed, max_degree_delta):
-        """
-        Get parameters for this augmenter. Must use the seed provided
-        """
-        random.seed(seed)
-        r = random.randint(-max_degree_delta,max_degree_delta)
-        r = 45
-        return (r,)
-
-    def __call__(self, input:Riddle)->Riddle:
-        params = dict(max_degree_delta=self.max_degree_delta)
-        r = functional.floatRotateAll2(input,*self.get_params(random.random(),**params))
-        return r
-
 class RandomFloatRotate:
     def __init__(self, p:float, same_aug_for_all_pairs:bool, max_abs_degree_delta:int=180, possible_superres_scale_facs= [1]):
         """
@@ -133,6 +108,63 @@ class RandomFloatRotate:
         params = dict(max_degree_delta=self.max_degree_delta, superres_scale_fac=self.superres_scale_fac)
         func = functional.floatRotateAll
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
+
+class RandomFloatRotate2:
+    def __init__(self, p:float, max_abs_degree_delta:int=180):
+        """
+        Randomly rotates boards by any number of degrees then re-rasterizes into a grid
+        """
+        self.p = p
+        self.max_degree_delta = max_abs_degree_delta
+        assert max_abs_degree_delta >= 1, "max_degree_delta must be >= 1"
+        assert max_abs_degree_delta <= 180, "max_degree_delta must be <= 180"
+
+    @staticmethod
+    def get_params(seed, max_degree_delta):
+        """
+        Get parameters for this augmenter. Must use the seed provided
+        """
+        random.seed(seed)
+        r = random.randint(-max_degree_delta,max_degree_delta)
+        return (r,)
+
+    def __call__(self, input:Riddle)->Riddle:
+        params = dict(max_degree_delta=self.max_degree_delta)
+        r = functional.floatRotateAll2(input,*self.get_params(random.random(),**params))
+        return r
+
+class RandomQuasiRotate:
+    def __init__(self, p:float, max_abs_degree_delta_hor:int=45,max_abs_degree_delta_ver:int=45,same_aug_for_all_pairs:bool=True):
+        """
+        Randomly rotates boards by any number of degrees then re-rasterizes into a grid
+        """
+        self.p = p
+        self.max_degree_delta_hor = max_abs_degree_delta_hor
+        self.max_degree_delta_ver = max_abs_degree_delta_ver
+        self.same_aug_for_all_pairs = same_aug_for_all_pairs
+        assert max_abs_degree_delta_ver >= 1, "max_degree_delta must be >= 1"
+        assert max_abs_degree_delta_ver <= 45 , "max_degree_delta must be <= 180"
+        assert max_abs_degree_delta_hor >= 1, "max_degree_delta must be >= 1"
+        assert max_abs_degree_delta_hor <= 45 , "max_degree_delta must be <= 180"
+
+    @staticmethod
+    def get_params(seed, max_degree_delta_hor,max_degree_delta_ver):
+
+        random.seed(seed)
+        r = random.randint(0,max_degree_delta_hor)
+        r_ver = random.randint(0,max_degree_delta_ver)
+        hor_start_top = random.choice([True,False])
+        ver_start_left = random.choice([True,False])
+        # can start at top or bottom, go left or right, at hor or ver
+        do_hor_first = random.choice([True,False])
+        return (r,r_ver,hor_start_top,ver_start_left,do_hor_first)
+
+    def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
+        params = dict(max_degree_delta_hor=self.max_degree_delta_hor, max_degree_delta_ver=self.max_degree_delta_ver)
+        func = functional.quasiRotate
+        return p_and_same_aug_helper(input, func, self.p, self.same_aug_for_all_pairs, self.get_params, **params)
+
+
 
 class RandomDoubleInputBoard:
     def __init__(self, p:float, same_aug_for_all_pairs:bool,possible_separations:list[int]=[-1,1,2], direction_type:Direction=Direction.both, random_z_index:bool=True):

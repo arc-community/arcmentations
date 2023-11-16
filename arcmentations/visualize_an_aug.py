@@ -7,13 +7,13 @@ from arcmentations import functional
 from arcmentations.augmentations.color import RandomColor
 from arcmentations.augmentations.helpers import same_aug_for_all_pairs_helper
 from arcmentations.augmentations.spatial import Direction, RandomDoubleInputBoard, RandomFloatRotate, RandomPadInputOnly, RandomPad, RandomReflect, RandomRotate, RandomSuperResolution, RandomTaurusTranslate\
-    , RandomFloatRotate2
+    , RandomFloatRotate2 , RandomQuasiRotate
 from arcmentations.vis_helpers import plot_task, plot_pairs
 from arcmentations.augmentations import RandomCropInputAndOuput
 #   from torchvision import transforms
 if __name__ == "__main__":
     train_riddles = get_riddles(["training"])
-    riddle = train_riddles[2]
+    riddle = train_riddles[6]
     # transform = transforms.Compose([
     #     # transforms.RandomOrder([
     #     #     RandomCropInputAndOuput(1, same_aug_for_all_pairs=True),
@@ -40,10 +40,13 @@ if __name__ == "__main__":
     #     ]),
 
     # ])
-    transform = RandomFloatRotate2(1, max_abs_degree_delta = 180)
+
+    transform = RandomQuasiRotate(1)
+    #transform = RandomReflect(1)
     riddle_transformed = transform(copy.deepcopy(riddle))
     path_to_save = './tmp/time_{}.png'.format(time.time())
     plot_task(riddle_transformed, save=False,save_train=False,path_to_save=path_to_save)
+    plot_task(riddle_transformed, save=True, save_train=True, path_to_save=path_to_save)
     plot_task(riddle, save=True, path_to_save='./tmp/train.png',save_train=True)
     #time.sleep(100000)
 
