@@ -106,7 +106,7 @@ class RandomFloatRotate:
 
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
         params = dict(max_degree_delta=self.max_degree_delta, superres_scale_fac=self.superres_scale_fac)
-        func = functional.floatRotateAll
+        func = functional.floatRotate1
         return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 
 class RandomFloatRotate2:
@@ -130,8 +130,8 @@ class RandomFloatRotate2:
 
     def __call__(self, input:Riddle)->Riddle:
         params = dict(max_degree_delta=self.max_degree_delta)
-        r = functional.floatRotateAll2(input,*self.get_params(random.random(),**params))
-        return r
+        func = functional.floatRotate2
+        return p_and_same_aug_helper(input, func, self.p,self.same_aug_for_all_pairs,self.get_params, **params)
 
 class RandomQuasiRotate:
     def __init__(self, p:float, max_abs_degree_delta_hor:int=45,max_abs_degree_delta_ver:int=45,same_aug_for_all_pairs:bool=True):
@@ -156,8 +156,8 @@ class RandomQuasiRotate:
         hor_start_top = random.choice([True,False])
         ver_start_left = random.choice([True,False])
         # can start at top or bottom, go left or right, at hor or ver
-        do_hor_first = random.choice([True,False])
-        return (r,r_ver,hor_start_top,ver_start_left,do_hor_first)
+        doHorFirst = random.choice([True,False])
+        return (r,r_ver,hor_start_top,ver_start_left,doHorFirst)
 
     def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
         params = dict(max_degree_delta_hor=self.max_degree_delta_hor, max_degree_delta_ver=self.max_degree_delta_ver)
@@ -361,3 +361,16 @@ class Shuffle:
         input.train = [input.train[i] for i in shuffled_train_list]
         input.test = [input.test[i] for i in shuffled_test_list]
         return input
+
+class RandomFlipInputAndOutput:
+    def __init__(
+        self,
+        p: float,
+    ):
+        self.p = p
+    def __call__(self, input:Union[BoardPair,list[BoardPair],Riddle])->Union[BoardPair,list[BoardPair],Riddle]:
+
+        func = functional.flipInputAndOutput
+        return p_and_same_aug_helper(input, func, self.p, True, lambda seed :(), **{})
+
+

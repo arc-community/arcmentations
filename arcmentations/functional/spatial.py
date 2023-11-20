@@ -83,13 +83,12 @@ def cropBoard(
     return Board(__root__=boardIn.tolist())
 
 
-def floatRotateAll(board_pair: BoardPair, angle: int, superres_scale_fac) -> BoardPair:
+def floatRotate1(board_pair: BoardPair, angle: int, superres_scale_fac) -> BoardPair:
     board_pair.input = floatRotate(board_pair.input, angle, superres_scale_fac)
     board_pair.output = floatRotate(board_pair.output, angle, superres_scale_fac)
     return board_pair
 
-
-def floatRotateAll2(r: Riddle, angle: int) -> Riddle:
+def floatRotate2(board_pair: BoardPair, angle: int) -> BoardPair:
     # case 1 all inputs and outputs are the same size
     # case 2 all outputs are the same size, all inputs are the same size
     # case 3 inputs have the same size as outputs
@@ -97,13 +96,10 @@ def floatRotateAll2(r: Riddle, angle: int) -> Riddle:
     # if the sizes are meant to be equal in all including test then make them equal.
     # all cases are now handled by producing a deterministic transformation output shape based on input shape
     # so all relationships will be preserved even if the shapes themselves are different.
-    for board_pair in r.train:
-        board_pair.input = customFloatRotate(board_pair.input, angle)
-        board_pair.output = customFloatRotate(board_pair.output, angle)
-    for board_pair in r.test:
-        board_pair.input = customFloatRotate(board_pair.input, angle)
-        board_pair.output = customFloatRotate(board_pair.output, angle)
-    return r
+    board_pair.input = customFloatRotate(board_pair.input, angle)
+    board_pair.output = customFloatRotate(board_pair.output, angle)
+    return board_pair
+
 
 
 def floatRotate(board_in: Board, angle: int, superres_scale_fac) -> Board:
@@ -473,13 +469,13 @@ def taurusTranslateBoard(
 
 
 def quasiRotate(
-    board_pair: BoardPair, angleHor, angleVer, startTopHor, startLeftVer, do_hor_first
+    board_pair: BoardPair, angleHor, angleVer, startTopHor, startLeftVer, doHorFirst
 ) -> BoardPair:
     board_pair.input = quasiRotateBothAxes(
-        board_pair.input, angleHor, angleVer, do_hor_first, startTopHor, startLeftVer
+        board_pair.input, angleHor, angleVer, doHorFirst, startTopHor, startLeftVer
     )
     board_pair.output = quasiRotateBothAxes(
-        board_pair.output, angleHor, angleVer, do_hor_first, startTopHor, startLeftVer
+        board_pair.output, angleHor, angleVer, doHorFirst, startTopHor, startLeftVer
     )
     return board_pair
 
@@ -540,3 +536,9 @@ def quasiRotateBothAxes(
         ret_board = quasiRotateBoardVer(boardIn, angleVer, startLeftVer)
         ret_board = quasiRotateBoardHor(ret_board, angleHor, startTopHor)
     return ret_board
+
+def flipInputAndOutput(board_in:BoardPair):
+    in_tmp = board_in.input
+    board_in.input = board_in.output
+    board_in.output = in_tmp
+    return board_in
